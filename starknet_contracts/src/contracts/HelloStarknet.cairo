@@ -1,11 +1,11 @@
 /// Simple contract for managing balance.
-#[Starknet::contract]
+#[starknet::contract]
 pub mod HelloStarknet {
     
-    use Starknet_contracts::interfaces::IHelloStarknet::IHelloStarknet;
+    use starknet_contracts::interfaces::IHelloStarknet::IHellostarknet;
     // use Starknet::storage::{StoragePointerReadAccess, StoragePathEntry, StoragePointerWriteAccess, Map };
-    use Starknet::storage::{Map, StorageMapReadAccess, StorageMapWriteAccess, StoragePointerReadAccess, StoragePointerWriteAccess };
-    use Starknet::{ContractAddress, get_caller_address};
+    use starknet::storage::{Map, StorageMapReadAccess, StorageMapWriteAccess, StoragePointerReadAccess, StoragePointerWriteAccess };
+    use starknet::{ContractAddress, get_caller_address};
 
     #[storage]
     struct Storage {
@@ -14,19 +14,25 @@ pub mod HelloStarknet {
     }
 
     #[event]
-    #[derive(Drop, Starknet::Event)]
+    #[derive(Drop, starknet::Event)]
     pub enum Event {
         Balance : BalanceIncreased,
     }
 
-    #[derive(Drop, Starknet::Event)]
+    #[derive(Drop, starknet::Event)]
     pub struct BalanceIncreased {
         pub caller: ContractAddress,
         pub amount: felt252,
     }
 
     #[abi(embed_v0)]
-    impl HelloStarknetImpl of IHelloStarknet<ContractState> {
+    impl HelloStarknetImpl of IHellostarknet<ContractState> {
+        fn set_balance(ref self: ContractState, amount: felt252) {
+            self.balance.write(amount);
+        }
+        fn reset_balance(ref self: ContractState) {
+            self.balance.write(0);
+        }
         fn increase_balance(ref self: ContractState, amount: felt252) {
             assert(amount != 0, 'Amount cannot be 0');
             let caller = get_caller_address();
@@ -50,3 +56,8 @@ pub mod HelloStarknet {
         }
     }
 }
+
+// this is the link to a hackmd file detailing the steps taken to achieve the process
+// https://hackmd.io/@demigodjayydy/B1uVi-23xx
+
+// stark token transfer transaction hash: 0x007d9c57cc95103408b263c3743b1b88b42277870555dbeb1b2b09e4e60143e4
