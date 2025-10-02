@@ -1,5 +1,5 @@
 #[starknet::contract]
-pub mod Counter {
+pub mod counter {
     // use starknet::ContractAddress;
     // use starknet::get_caller_address;
     use starknet_contracts::interfaces::ICounter::ICounter;
