@@ -56,3 +56,8 @@ pub mod HelloStarknet {
         }
     }
 }
+
+// this is the link to a hackmd file detailing the steps taken to achieve the process
+// https://hackmd.io/@demigodjayydy/B1uVi-23xx
+
+// stark token transfer transaction hash: 0x007d9c57cc95103408b263c3743b1b88b42277870555dbeb1b2b09e4e60143e4
