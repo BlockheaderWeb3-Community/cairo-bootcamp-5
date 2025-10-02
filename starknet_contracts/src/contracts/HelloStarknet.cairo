@@ -1,11 +1,11 @@
 /// Simple contract for managing balance.
-#[Starknet::contract]
+#[starknet::contract]
 pub mod HelloStarknet {
     
-    use Starknet_contracts::interfaces::IHelloStarknet::IHelloStarknet;
+    use starknet_contracts::interfaces::IHelloStarknet::IHelloStarknet;
     // use Starknet::storage::{StoragePointerReadAccess, StoragePathEntry, StoragePointerWriteAccess, Map };
-    use Starknet::storage::{Map, StorageMapReadAccess, StorageMapWriteAccess, StoragePointerReadAccess, StoragePointerWriteAccess };
-    use Starknet::{ContractAddress, get_caller_address};
+    use starknet::storage::{Map, StorageMapReadAccess, StorageMapWriteAccess, StoragePointerReadAccess, StoragePointerWriteAccess };
+    use starknet::{ContractAddress, get_caller_address};
 
     #[storage]
     struct Storage {
@@ -14,12 +14,12 @@ pub mod HelloStarknet {
     }
 
     #[event]
-    #[derive(Drop, Starknet::Event)]
+    #[derive(Drop, starknet::Event)]
     pub enum Event {
         Balance : BalanceIncreased,
     }
 
-    #[derive(Drop, Starknet::Event)]
+    #[derive(Drop, starknet::Event)]
     pub struct BalanceIncreased {
         pub caller: ContractAddress,
         pub amount: felt252,
