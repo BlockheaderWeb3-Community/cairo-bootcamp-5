@@ -1,11 +1,8 @@
-/// Simple contract for managing balance.
-#[Starknet::contract]
+#[starknet::contract]
 pub mod HelloStarknet {
-    
-    use Starknet_contracts::interfaces::IHelloStarknet::IHelloStarknet;
-    // use Starknet::storage::{StoragePointerReadAccess, StoragePathEntry, StoragePointerWriteAccess, Map };
-    use Starknet::storage::{Map, StorageMapReadAccess, StorageMapWriteAccess, StoragePointerReadAccess, StoragePointerWriteAccess };
-    use Starknet::{ContractAddress, get_caller_address};
+    use starknet::storage::*;
+    use starknet::{ContractAddress, get_caller_address};
+    use crate::interfaces::IHelloStarknet::IHelloStarknet;  // <--- correct import
 
     #[storage]
     struct Storage {
@@ -14,15 +11,16 @@ pub mod HelloStarknet {
     }
 
     #[event]
-    #[derive(Drop, Starknet::Event)]
+    #[derive(Drop, starknet::Event)]
     pub enum Event {
-        Balance : BalanceIncreased,
+        Balance: BalanceUpdated,
     }
 
-    #[derive(Drop, Starknet::Event)]
-    pub struct BalanceIncreased {
+    #[derive(Drop, starknet::Event)]
+    pub struct BalanceUpdated {
         pub caller: ContractAddress,
-        pub amount: felt252,
+        pub old_amount: felt252,
+        pub new_amount: felt252,
     }
 
     #[abi(embed_v0)]
@@ -31,22 +29,49 @@ pub mod HelloStarknet {
             assert(amount != 0, 'Amount cannot be 0');
             let caller = get_caller_address();
 
-            let updated_amount = self.balance.read() + amount;
-            self.balance.write(updated_amount);
+            let old_total = self.balance.read();
+            let new_total = old_total + amount;
+            self.balance.write(new_total);
 
-            // let unique_balance = self.balances.entry(caller).read();
+            let old_unique = self.balances.read(caller);
+            let new_unique = old_unique + amount;
+            self.balances.write(caller, new_unique);
 
-            let unique_balance = self.balances.read(caller);
-            // self.balances.entry(caller).write(unique_balance + amount);
-            self.balances.write(caller, unique_balance + amount);
-
-            // self.balance.write(self.balance.read() + amount);
-
-            self.emit(BalanceIncreased{caller, amount});
+            self.emit(Event::Balance(BalanceUpdated { caller, old_amount: old_unique, new_amount: new_unique }));
         }
 
         fn get_balance(self: @ContractState) -> felt252 {
             self.balance.read()
+        }
+
+        fn get_unique_balance(self: @ContractState, addr: ContractAddress) -> felt252 {
+            self.balances.read(addr)
+        }
+
+        fn set_balance(ref self: ContractState, amount: felt252) {
+            assert(amount != 0, 'Amount cannot be 0');
+            let caller = get_caller_address();
+
+            let old_unique = self.balances.read(caller);
+            self.balances.write(caller, amount);
+
+            let old_total = self.balance.read();
+            let new_total = old_total + amount - old_unique;
+            self.balance.write(new_total);
+
+            self.emit(Event::Balance(BalanceUpdated { caller, old_amount: old_unique, new_amount: amount }));
+        }
+
+        fn reset_balance(ref self: ContractState) {
+            let caller = get_caller_address();
+            let old_unique = self.balances.read(caller);
+
+            let total = self.balance.read();
+            self.balance.write(total - old_unique);
+
+            self.balances.write(caller, 0);
+
+            self.emit(Event::Balance(BalanceUpdated { caller, old_amount: old_unique, new_amount: 0 }));
         }
     }
 }

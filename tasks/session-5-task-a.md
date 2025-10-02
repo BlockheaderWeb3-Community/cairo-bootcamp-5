@@ -64,6 +64,9 @@ sncast invoke \
   --arguments '<PEER_WALLET_ADDRESS>, 10000000000000000000'
 ```
 
+#### MY TRANSACTION HASH
+https://sepolia.starkscan.co/tx/0x04178df11f3e300623d54366db9afe7b5c10cdd1f739a64529fe710251c59ca0
+
 
 ##### Submission
 
