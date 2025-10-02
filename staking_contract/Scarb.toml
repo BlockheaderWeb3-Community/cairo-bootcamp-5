@@ -1,0 +1,17 @@
+[package]
+name = "staking_contract"
+version = "0.1.0"
+edition = "2024_07"
+
+[dependencies]
+starknet = "2.11.4"
+
+[dev-dependencies]
+snforge_std = { git = "https://github.com/foundry-rs/starknet-foundry.git", rev = "f994c8b" }
+assert_macros = "2.11.4"
+
+[[target.starknet-contract]]
+sierra = true
+
+[scripts]
+test = "snforge test"
