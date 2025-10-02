@@ -10,3 +10,4 @@ Deploy or use the given Counter contract, then use sncast to:
 - Invoke `decrement` once.
 - Call `get_count` again to verify it decreased.
 
+
