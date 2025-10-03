@@ -1,0 +1,5 @@
+# Visit https://foundry-rs.github.io/Starknet-foundry/appendix/snfoundry-toml.html
+# and https://foundry-rs.github.io/Starknet-foundry/projects/configuration.html for more information
+
+[snforge]
+exit-first = true
