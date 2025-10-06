@@ -38,8 +38,8 @@ pub mod RewardToken {
     }
 
     #[constructor]
-    fn constructor(ref self: ContractState, owner: ContractAddress) {
-        self.erc20.initializer("Reward Token", "RWD");
+    fn constructor(ref self: ContractState, owner: ContractAddress, name: ByteArray, symbol: ByteArray) {
+        self.erc20.initializer(name, symbol);
         self.ownable.initializer(owner);
 
         self.erc20.mint(owner, 1000000000000_u256);

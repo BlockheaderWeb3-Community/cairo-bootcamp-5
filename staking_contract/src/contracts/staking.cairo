@@ -187,6 +187,10 @@ pub mod StakingContract {
             self.user_stake_balance.read(account)
         }
 
+        fn duration_of(self: @ContractState, account: ContractAddress) -> u64 {
+            self.user_stake_duration.read(account)
+        }
+
         fn earned(self: @ContractState, account: ContractAddress) -> u256 {
             let rewards_paid = self.user_reward_paid.read(account);
             let rewards_owed = self.rewards.read(account);
@@ -210,7 +214,7 @@ pub mod StakingContract {
         fn fund_rewards(ref self: ContractState, amount: u256, reward_multiplier: u64) {
             self.ownable.assert_only_owner();
             assert(amount > 0, 'Amount must be > 0');
-            assert(reward_multiplier > 0 && reward_multiplier <= 50, 'Reward multiplier must be > 0');
+            assert!(reward_multiplier > 0 && reward_multiplier <= 50, "Reward multiplier must be > 0 and less tham 50"); //max 5%
 
             let reward_token = IERC20Dispatcher { contract_address: self.reward_token.read() };
             let caller = get_caller_address();

@@ -9,6 +9,7 @@ pub trait IStaking<TContractState> {
 
     // View functions
     fn balance_of(self: @TContractState, account: ContractAddress) -> u256;
+    fn duration_of(self: @TContractState, account: ContractAddress) -> u64;
     fn earned(self: @TContractState, account: ContractAddress) -> u256;
     fn total_staked(self: @TContractState) -> u256;
     fn reward_rate(self: @TContractState) -> u256;

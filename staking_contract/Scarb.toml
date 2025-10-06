@@ -7,9 +7,25 @@ edition = "2023_01"
 starknet = "2.8.4"
 openzeppelin = "0.20.0"
 
+[dev-dependencies]
+snforge_std = "0.50.0"
+assert_macros = "2.11.4"
+
 [[target.starknet-contract]]
 sierra = true
 casm = true
 
 [tool.snforgery]
 exit-first = true
+
+[scripts]
+test = "snforge test"
+
+[tool.scarb]
+allow-prebuilt-plugins = ["snforge_std"]
+
+[profile.dev.cairo]                                        # Configure Cairo compiler
+unstable-add-statements-code-locations-debug-info = true   # Should be used if you want to use coverage
+unstable-add-statements-functions-debug-info = true        # Should be used if you want to use coverage/profiler
+inlining-strategy = "avoid"                                # Should be used if you want to use coverage
+
