@@ -147,7 +147,7 @@ pub mod StakingContract {
             let duration = self.user_stake_duration.read(caller);
             let block_time = get_block_timestamp() ;
             assert(balance >= amount, 'Insufficient balance');
-            assert(block_time <= duration, 'Staking period has not ended');
+            assert(block_time >= duration, 'Staking period has not ended');
 
             let staking_token = IERC20Dispatcher { contract_address: self.staking_token.read() };
             let success = staking_token.transfer(caller, amount);
@@ -179,7 +179,6 @@ pub mod StakingContract {
 
             self.emit(Event::RewardPaid(RewardPaid { user: caller, reward }));
             
-
             self.reentrancy_guard.end();
         }
 

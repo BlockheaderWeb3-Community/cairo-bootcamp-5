@@ -462,7 +462,6 @@ fn test_unstake_more_than_amount_staked() {
 }
 
 #[test]
-#[ignore]
 #[should_panic(expected: 'Staking period has not ended')]
 fn test_unstake_stake_duration_not_reached() {
     let user = contract_address_const::<'user'>();
@@ -482,9 +481,9 @@ fn test_unstake_stake_duration_not_reached() {
     staking_contract.stake(80000000, 100);
 
     stop_cheat_caller_address(staking_contract.contract_address);
-    // stop_cheat_block_timestamp(staking_contract.contract_address);
+    stop_cheat_block_timestamp(staking_contract.contract_address);
 
-    // start_cheat_block_timestamp(staking_contract.contract_address, 10000);
+    start_cheat_block_timestamp(staking_contract.contract_address, 10000);
     start_cheat_caller_address(staking_contract.contract_address, user);
 
     // Unstake 80 tokens
@@ -702,19 +701,20 @@ fn test_claim_reward() {
     // Stake 100 tokens
     staking_contract.stake(100000000, 10);
 
+    stop_cheat_caller_address(staking_contract.contract_address);
     stop_cheat_block_timestamp(staking_contract.contract_address);
 
     start_cheat_block_timestamp(staking_contract.contract_address, 10070);
+    start_cheat_caller_address(staking_contract.contract_address, user);
 
     // claim rewards
     staking_contract.claim_rewards();
 
     let reward_earned = staking_contract.earned(user);
-    assert(reward_earned > 1000000, 'No rewards earned');
+    assert(reward_earned == 1000000, 'No rewards earned');
 
-    stop_cheat_block_timestamp(staking_contract.contract_address);
     stop_cheat_caller_address(staking_contract.contract_address);
-
+    stop_cheat_block_timestamp(staking_contract.contract_address);
 }
 
 #[test]
@@ -781,43 +781,113 @@ fn test_unpause_by_non_owner() {
 }
 
 
-// #[test]
-// fn test_recover_erc20() {
-//     let (staking_contract, staking_token, _reward_token, _owner) = deploy_staking_contract();
+#[test]
+fn test_recover_erc20() {
+    let (staking_contract, _staking_token, _reward_token, owner) = deploy_staking_contract();
 
-//     let another_erc20 = deploy_another_erc20();
+    let another_erc20 = deploy_another_erc20();
 
-//     let user = contract_address_const::<'user'>();
+    let user = contract_address_const::<'user'>();
 
-//     start_cheat_caller_address(another_erc20.contract_address, user);
+    start_cheat_caller_address(another_erc20.contract_address, user);
 
-//     staking_token.mint(user, 100000000 );  // 100 tokens
-//     // Approve staking contract to spend tokens
-//     staking_token.transfer(another_erc20.contract_address, 100000000); // 100 tokens
+    another_erc20.mint(user, 100000000 );  // 100 tokens
+    // Approve staking contract to spend tokens
+    another_erc20.transfer(staking_contract.contract_address, 100000000); // 100 tokens
 
-//     stop_cheat_caller_address(staking_token.contract_address);
+    stop_cheat_caller_address(another_erc20.contract_address);
 
-//     start_cheat_block_timestamp(staking_contract.contract_address, 10000);
-//     start_cheat_caller_address(staking_contract.contract_address, user);
+    start_cheat_caller_address(staking_contract.contract_address, owner);
 
+    let mut spy = spy_events();
 
-//     let mut spy = spy_events();
+    // Stake 50 tokens
+    staking_contract.recover_erc20(another_erc20.contract_address, 50000000);
 
-//     // Stake 50 tokens
-//     staking_contract.recover_erc20(another_erc20.contract_address, 50000000);
+    // Check event
+    spy.assert_emitted(@array![(
+        staking_contract.contract_address,
+        staking_contract::contracts::staking::StakingContract::Event::RecoveredTokens(
+            staking_contract::contracts::staking::StakingContract::RecoveredTokens {
+                token: another_erc20.contract_address,
+                amount: 50000000
+            }
+        )
+    )]);
+    stop_cheat_caller_address(staking_contract.contract_address);
+}
 
-//     // Check event
-//     spy.assert_emitted(@array![(
-//         staking_contract.contract_address,
-//         staking_contract::contracts::staking::StakingContract::Event::RecoveredTokens()
-//             staking_contract::contracts::staking::StakingContract::RecoveredTokens {
-//                 token: another_erc20.contract_address),
-//                 amount: 50000000
-//             }
-//         )
-//     )]);
+#[test]
+#[should_panic(expected: 'Caller is not the owner')]
+fn test_recover_erc20_by_non_owner() {
+    let (staking_contract, staking_token, _reward_token, owner) = deploy_staking_contract();
 
-//     stop_cheat_caller_address(staking_contract.contract_address);
-//     stop_cheat_block_timestamp(staking_contract.contract_address);
-// }
+    let another_erc20 = deploy_another_erc20();
 
+    let user = contract_address_const::<'user'>();
+
+    start_cheat_caller_address(another_erc20.contract_address, user);
+
+    another_erc20.mint(user, 100000000 );  // 100 tokens
+    // Approve staking contract to spend tokens
+    another_erc20.transfer(staking_contract.contract_address, 100000000); // 100 tokens
+
+    stop_cheat_caller_address(another_erc20.contract_address);
+
+    start_cheat_caller_address(staking_contract.contract_address, user);
+
+    // Stake 50 tokens
+    staking_contract.recover_erc20(another_erc20.contract_address, 50000000);
+
+    stop_cheat_caller_address(staking_contract.contract_address);
+}
+
+#[test]
+#[should_panic(expected: 'Cannot recover staking token')]
+fn test_recover_erc20_of_staking_token() {
+    let (staking_contract, staking_token, _reward_token, owner) = deploy_staking_contract();
+
+    let another_erc20 = deploy_another_erc20();
+
+    let user = contract_address_const::<'user'>();
+
+    start_cheat_caller_address(another_erc20.contract_address, user);
+
+    another_erc20.mint(user, 100000000 );  // 100 tokens
+    // Approve staking contract to spend tokens
+    another_erc20.transfer(staking_contract.contract_address, 100000000); // 100 tokens
+
+    stop_cheat_caller_address(another_erc20.contract_address);
+
+    start_cheat_caller_address(staking_contract.contract_address, owner);
+
+    // Stake 50 tokens
+    staking_contract.recover_erc20(staking_token.contract_address, 50000000);
+
+    stop_cheat_caller_address(staking_contract.contract_address);
+}
+
+#[test]
+#[should_panic(expected: 'Cannot recover reward token')]
+fn test_recover_erc20_of_reward_token() {
+    let (staking_contract, _staking_token, reward_token, owner) = deploy_staking_contract();
+
+    let another_erc20 = deploy_another_erc20();
+
+    let user = contract_address_const::<'user'>();
+
+    start_cheat_caller_address(another_erc20.contract_address, user);
+
+    another_erc20.mint(user, 100000000 );  // 100 tokens
+    // Approve staking contract to spend tokens
+    another_erc20.transfer(staking_contract.contract_address, 100000000); // 100 tokens
+
+    stop_cheat_caller_address(another_erc20.contract_address);
+
+    start_cheat_caller_address(staking_contract.contract_address, owner);
+
+    // Stake 50 tokens
+    staking_contract.recover_erc20(reward_token.contract_address, 50000000);
+
+    stop_cheat_caller_address(staking_contract.contract_address);
+}
