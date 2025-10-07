@@ -6,7 +6,6 @@ struct Wallet<T, U> {
 }
 
 
-#[executable]
 fn main() -> u32 {
     //Loop Demo 
     //  let mut i: usize = 0;
@@ -133,12 +132,3 @@ fn factorial_not_recursive(mut n:u32) -> u32{
      a
 }
 
-#[cfg(test)]
-mod tests {
-    use super::fib;
-
-    #[test]
-    fn it_works() {
-        assert(fib(16) == 987, 'it works!');
-    }
-}

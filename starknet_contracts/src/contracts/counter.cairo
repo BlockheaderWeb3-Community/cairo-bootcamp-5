@@ -1,9 +1,9 @@
-#[Starknet::contract]
+#[starknet::contract]
 pub mod Counter {
     // use Starknet::ContractAddress;
     // use Starknet::get_caller_address;
-    use Starknet_contracts::interfaces::ICounter::ICounter;
-    use Starknet::storage::{StoragePointerReadAccess, StoragePointerWriteAccess};
+    use crate::interfaces::ICounter::ICounter;
+    use starknet::storage::{StoragePointerReadAccess, StoragePointerWriteAccess};
 
     #[storage]
     struct Storage {
@@ -11,13 +11,13 @@ pub mod Counter {
     }
 
     #[event]
-    #[derive(Drop, Starknet::Event)]
+    #[derive(Drop, starknet::Event)]
     pub enum Event {
-        CountUpdated : CountUpdated,
+        CountUpdated: CountUpdated,
     }
 
-    #[derive(Drop, Starknet::Event)]
-    struct CountUpdated {
+    #[derive(Drop, starknet::Event)]
+    pub struct CountUpdated {
         old_value: u32,
         new_value: u32,
     }

@@ -1,5 +1,5 @@
 [package]
-name = "starknet_contracts"
+name = "staking"
 version = "0.1.0"
 edition = "2024_07"
 
@@ -9,7 +9,7 @@ edition = "2024_07"
 starknet = "2.11.4"
 
 [dev-dependencies]
-snforge_std = "0.43.1"
+snforge_std_deprecated = "0.49.0"
 assert_macros = "2.11.4"
 
 [[target.starknet-contract]]
@@ -19,9 +19,9 @@ sierra = true
 test = "snforge test"
 
 [tool.scarb]
-allow-prebuilt-plugins = ["snforge_std"]
+allow-prebuilt-plugins = ["snforge_std_deprecated"]
 
-# Visit https://foundry-rs.github.io/Starknet-foundry/appendix/scarb-toml.html for more information
+# Visit https://foundry-rs.github.io/starknet-foundry/appendix/scarb-toml.html for more information
 
 # [tool.snforge]                                             # Define `snforge` tool section
 # exit_first = true                                          # Stop tests execution immediately upon the first failure
