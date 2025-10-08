@@ -69,4 +69,5 @@ sncast invoke \
 
 - Push your updated Counter contract to your GitHub repo.
 - Share your sncast transaction hash as proof of STRK token transfer.
+ https://sepolia.starkscan.co/tx/0x029a9ce604a4bdce437768227dae7fc7e69f30812d6d3d30781a6d6d160280ee
 - Create a PR
