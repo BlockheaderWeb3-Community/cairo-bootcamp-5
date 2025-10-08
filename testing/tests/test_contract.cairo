@@ -101,3 +101,133 @@ fn test_stake() {
     assert(stake_details.duration == stake_duration, 'stake duration incorrect');
     assert(stake_details.valid, 'stake valid incorrect');
 }
+
+#[test]
+fn test_Unstake() {
+    let (dispatcher, strk_address, _) = deploy_contract();
+    let caller: ContractAddress = contract_address_const::<'aji'>();
+    let stake_amount: u256 = 1000;
+    let unstake_amount: u256 = 500;
+    let stake_duration: u64 = 60 * 60 * 24 * 7; // 1 week
+
+    // Mint some STRK to caller
+    let strk_mint = IExternalDispatcher { contract_address: strk_address };
+    strk_mint.mint(caller, 10000);
+
+    let strk = IERC20Dispatcher { contract_address: strk_address };
+    let initial_balance = strk.balance_of(caller);
+
+    start_cheat_caller_address(strk_address, caller);
+    // Approve staking contract to spend caller's STRK
+    strk.approve(dispatcher.contract_address, stake_amount);
+    stop_cheat_caller_address(strk_address);
+
+    start_cheat_caller_address(dispatcher.contract_address, caller);
+    // Stake tokens
+    let _ = dispatcher.stake(stake_amount, stake_duration);
+    let post_stake_balance = strk.balance_of(caller);
+    assert(post_stake_balance == initial_balance - stake_amount, 'stake failed');
+
+    // Now unstake
+    dispatcher.unstake(unstake_amount);
+    let post_unstake_balance = strk.balance_of(caller);
+    stop_cheat_caller_address(dispatcher.contract_address);
+
+    // Check user balance increased by unstake_amount
+    assert(post_unstake_balance == post_stake_balance + unstake_amount, 'unstake failed');
+
+    // Check contract balance decreased
+    let contract_balance = strk.balance_of(dispatcher.contract_address);
+    assert(contract_balance == stake_amount - unstake_amount, 'contract balance incorrect');
+
+    // Check staked balance decreased
+    let staked_balance = dispatcher.balance_of(caller);
+    assert(staked_balance == stake_amount - unstake_amount, 'staked balance incorrect');
+}
+
+#[test]
+fn test_balance_of() {
+    let (dispatcher, strk_address, _) = deploy_contract();
+    let caller: ContractAddress = contract_address_const::<'aji'>();
+    let stake_amount: u256 = 1000;
+
+    // Mint and stake
+    let strk_mint = IExternalDispatcher { contract_address: strk_address };
+    strk_mint.mint(caller, 10000);
+
+    let strk = IERC20Dispatcher { contract_address: strk_address };
+    start_cheat_caller_address(strk_address, caller);
+    strk.approve(dispatcher.contract_address, stake_amount);
+    stop_cheat_caller_address(strk_address);
+
+    start_cheat_caller_address(dispatcher.contract_address, caller);
+    let _ = dispatcher.stake(stake_amount, 60 * 60 * 24 * 7);
+    stop_cheat_caller_address(dispatcher.contract_address);
+
+    let balance = dispatcher.balance_of(caller);
+    assert(balance == stake_amount, 'balance_of incorrect');
+}
+
+#[test]
+fn test_total_supply() {
+    let (dispatcher, strk_address, _) = deploy_contract();
+    let caller: ContractAddress = contract_address_const::<'aji'>();
+    let stake_amount: u256 = 1000;
+
+    let initial_supply = dispatcher.total_supply();
+    assert(initial_supply == 0, 'initial supply not zero');
+
+    // Mint and stake
+    let strk_mint = IExternalDispatcher { contract_address: strk_address };
+    strk_mint.mint(caller, 10000);
+
+    let strk = IERC20Dispatcher { contract_address: strk_address };
+    start_cheat_caller_address(strk_address, caller);
+    strk.approve(dispatcher.contract_address, stake_amount);
+    stop_cheat_caller_address(strk_address);
+
+    start_cheat_caller_address(dispatcher.contract_address, caller);
+    let _ = dispatcher.stake(stake_amount, 60 * 60 * 24 * 7);
+    stop_cheat_caller_address(dispatcher.contract_address);
+
+    let supply = dispatcher.total_supply();
+    assert(supply == stake_amount, 'total_supply incorrect');
+}
+
+#[test]
+fn test_earned() {
+    let (dispatcher, _, _) = deploy_contract();
+    let caller: ContractAddress = contract_address_const::<'aji'>();
+
+    // No staking, no rewards
+    let earned_amount = dispatcher.earned(caller);
+    assert(earned_amount == 0, 'earned should be zero initially');
+}
+
+#[test]
+fn test_reward_per_token() {
+    let (dispatcher, _, _) = deploy_contract();
+
+    let rpt = dispatcher.reward_per_token();
+    assert(rpt == 0, 'reward_per_token should be zero');
+}
+
+#[test]
+fn test_last_time_reward_applicable() {
+    let (dispatcher, _, _) = deploy_contract();
+
+    let ltra = dispatcher.last_time_reward_applicable();
+    // Since period_finish is 0, and current_time > 0, should return 0
+    assert(ltra == 0, 'ltra incorrect');
+}
+
+#[test]
+#[should_panic(expected: ('No rewards to claim',))]
+fn test_claim_rewards_no_rewards() {
+    let (dispatcher, _, _) = deploy_contract();
+    let caller: ContractAddress = contract_address_const::<'aji'>();
+
+    start_cheat_caller_address(dispatcher.contract_address, caller);
+    dispatcher.claim_rewards();
+    stop_cheat_caller_address(dispatcher.contract_address);
+}
