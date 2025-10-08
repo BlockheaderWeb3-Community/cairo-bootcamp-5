@@ -1,11 +1,14 @@
 /// Simple contract for managing balance.
-#[Starknet::contract]
-pub mod HelloStarknet {
-    
-    use Starknet_contracts::interfaces::IHelloStarknet::IHelloStarknet;
-    // use Starknet::storage::{StoragePointerReadAccess, StoragePathEntry, StoragePointerWriteAccess, Map };
-    use Starknet::storage::{Map, StorageMapReadAccess, StorageMapWriteAccess, StoragePointerReadAccess, StoragePointerWriteAccess };
-    use Starknet::{ContractAddress, get_caller_address};
+#[starknet::contract]
+pub mod Hellostarknet {
+    // use starknet::storage::{StoragePointerReadAccess, StoragePathEntry,
+    // StoragePointerWriteAccess, Map };
+    use starknet::storage::{
+        Map, StorageMapReadAccess, StorageMapWriteAccess, StoragePointerReadAccess,
+        StoragePointerWriteAccess,
+    };
+    use starknet::{ContractAddress, get_caller_address};
+    use starknet_contracts::interfaces::IHellostarknet::IHellostarknet;
 
     #[storage]
     struct Storage {
@@ -14,19 +17,19 @@ pub mod HelloStarknet {
     }
 
     #[event]
-    #[derive(Drop, Starknet::Event)]
+    #[derive(Drop, starknet::Event)]
     pub enum Event {
-        Balance : BalanceIncreased,
+        Balance: BalanceIncreased,
     }
 
-    #[derive(Drop, Starknet::Event)]
+    #[derive(Drop, starknet::Event)]
     pub struct BalanceIncreased {
         pub caller: ContractAddress,
         pub amount: felt252,
     }
 
     #[abi(embed_v0)]
-    impl HelloStarknetImpl of IHelloStarknet<ContractState> {
+    impl HellostarknetImpl of IHellostarknet<ContractState> {
         fn increase_balance(ref self: ContractState, amount: felt252) {
             assert(amount != 0, 'Amount cannot be 0');
             let caller = get_caller_address();
@@ -42,7 +45,16 @@ pub mod HelloStarknet {
 
             // self.balance.write(self.balance.read() + amount);
 
-            self.emit(BalanceIncreased{caller, amount});
+            self.emit(BalanceIncreased { caller, amount });
+        }
+
+        fn set_balance(ref self: ContractState, amount: felt252) {
+            assert(amount != 0, 'Amount cannot be 0');
+            self.balance.write(amount);
+        }
+
+        fn reset_balance(ref self: ContractState) {
+           self.balance.write(0);
         }
 
         fn get_balance(self: @ContractState) -> felt252 {
