@@ -124,7 +124,7 @@ mod Staking {
 
             // Update user balance and total supply
             let current_balance = self.balances.read(caller);
-            self.balances.write(caller, current_balance - amount);
+            self.balances.write(caller, current_balance + amount);
             let current_total = self.total_supply.read();
             self.total_supply.write(current_total + amount);
 
@@ -155,7 +155,7 @@ mod Staking {
             self.update_reward(caller);
 
             // Update user balance and total supply
-            self.balances.write(caller, current_balance + amount);
+            self.balances.write(caller, current_balance - amount);
             let current_total = self.total_supply.read();
             self.total_supply.write(current_total - amount);
 

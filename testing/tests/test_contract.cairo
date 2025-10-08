@@ -19,7 +19,7 @@ fn deploy_contract() -> (IStakingDispatcher, ContractAddress, ContractAddress) {
 }
 
 fn deploy_erc20() -> (ContractAddress, ContractAddress) {
-    let owner: ContractAddress = contract_address_const::<'aji'>();
+    let owner: ContractAddress = contract_address_const::<'owner'>();
     let name: ByteArray = "STRK";
     let sym: ByteArray = "Sym";
     let reward: ByteArray = "Reward";
@@ -58,22 +58,22 @@ fn test_deployment() {
 #[test]
 fn test_stake() {
     let (dispatcher, strk_address, _) = deploy_contract();
-    let caller: ContractAddress = contract_address_const::<'aji'>();
+    let caller: ContractAddress = 0x616a69.try_into().unwrap();
     let stake_amount: u256 = 1000;
     let stake_duration: u64 = 60 * 60 * 24 * 7; // 1 week
 
+    let strk = IERC20Dispatcher { contract_address: strk_address };
+
     // Mint some STRK to caller
     let strk_mint = IExternalDispatcher { contract_address: strk_address };
-    strk_mint.mint(caller, 10000);
-
-    let strk = IERC20Dispatcher { contract_address: strk_address };
-    let initial_balance = strk.balance_of(caller);
-
     start_cheat_caller_address(strk_address, caller);
+    strk_mint.mint(caller, 10000);
     // Approve staking contract to spend caller's STRK
     strk.approve(dispatcher.contract_address, stake_amount);
     let allowance = strk.allowance(caller, dispatcher.contract_address);
     stop_cheat_caller_address(strk_address);
+
+    let initial_balance = strk.balance_of(caller);
 
     println!("Allowance: {}", allowance);
     println!("Initial Balance: {}", initial_balance);
@@ -105,22 +105,22 @@ fn test_stake() {
 #[test]
 fn test_Unstake() {
     let (dispatcher, strk_address, _) = deploy_contract();
-    let caller: ContractAddress = contract_address_const::<'aji'>();
+    let caller: ContractAddress = 0x616a69.try_into().unwrap();
     let stake_amount: u256 = 1000;
     let unstake_amount: u256 = 500;
     let stake_duration: u64 = 60 * 60 * 24 * 7; // 1 week
 
+    let strk = IERC20Dispatcher { contract_address: strk_address };
+
     // Mint some STRK to caller
     let strk_mint = IExternalDispatcher { contract_address: strk_address };
-    strk_mint.mint(caller, 10000);
-
-    let strk = IERC20Dispatcher { contract_address: strk_address };
-    let initial_balance = strk.balance_of(caller);
-
     start_cheat_caller_address(strk_address, caller);
+    strk_mint.mint(caller, 10000);
     // Approve staking contract to spend caller's STRK
     strk.approve(dispatcher.contract_address, stake_amount);
     stop_cheat_caller_address(strk_address);
+
+    let initial_balance = strk.balance_of(caller);
 
     start_cheat_caller_address(dispatcher.contract_address, caller);
     // Stake tokens
@@ -148,15 +148,15 @@ fn test_Unstake() {
 #[test]
 fn test_balance_of() {
     let (dispatcher, strk_address, _) = deploy_contract();
-    let caller: ContractAddress = contract_address_const::<'aji'>();
+    let caller: ContractAddress = 0x616a69.try_into().unwrap();
     let stake_amount: u256 = 1000;
+
+    let strk = IERC20Dispatcher { contract_address: strk_address };
 
     // Mint and stake
     let strk_mint = IExternalDispatcher { contract_address: strk_address };
-    strk_mint.mint(caller, 10000);
-
-    let strk = IERC20Dispatcher { contract_address: strk_address };
     start_cheat_caller_address(strk_address, caller);
+    strk_mint.mint(caller, 10000);
     strk.approve(dispatcher.contract_address, stake_amount);
     stop_cheat_caller_address(strk_address);
 
@@ -171,18 +171,18 @@ fn test_balance_of() {
 #[test]
 fn test_total_supply() {
     let (dispatcher, strk_address, _) = deploy_contract();
-    let caller: ContractAddress = contract_address_const::<'aji'>();
+    let caller: ContractAddress = 0x616a69.try_into().unwrap();
     let stake_amount: u256 = 1000;
 
     let initial_supply = dispatcher.total_supply();
     assert(initial_supply == 0, 'initial supply not zero');
 
+    let strk = IERC20Dispatcher { contract_address: strk_address };
+
     // Mint and stake
     let strk_mint = IExternalDispatcher { contract_address: strk_address };
-    strk_mint.mint(caller, 10000);
-
-    let strk = IERC20Dispatcher { contract_address: strk_address };
     start_cheat_caller_address(strk_address, caller);
+    strk_mint.mint(caller, 10000);
     strk.approve(dispatcher.contract_address, stake_amount);
     stop_cheat_caller_address(strk_address);
 
@@ -197,7 +197,7 @@ fn test_total_supply() {
 #[test]
 fn test_earned() {
     let (dispatcher, _, _) = deploy_contract();
-    let caller: ContractAddress = contract_address_const::<'aji'>();
+    let caller: ContractAddress = 0x616a69.try_into().unwrap();
 
     // No staking, no rewards
     let earned_amount = dispatcher.earned(caller);
@@ -225,7 +225,7 @@ fn test_last_time_reward_applicable() {
 #[should_panic(expected: ('No rewards to claim',))]
 fn test_claim_rewards_no_rewards() {
     let (dispatcher, _, _) = deploy_contract();
-    let caller: ContractAddress = contract_address_const::<'aji'>();
+    let caller: ContractAddress = 0x616a69.try_into().unwrap();
 
     start_cheat_caller_address(dispatcher.contract_address, caller);
     dispatcher.claim_rewards();
