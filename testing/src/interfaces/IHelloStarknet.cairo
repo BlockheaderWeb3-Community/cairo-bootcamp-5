@@ -1,6 +1,6 @@
 /// Interface representing `HelloContract`.
 /// This interface allows modification and retrieval of the contract balance.
-#[starknet::interface]
+#[Starknet::interface]
 pub trait IHelloStarknet<TContractState> {
     /// Increase contract balance.
     fn increase_balance(ref self: TContractState, amount: felt252);
