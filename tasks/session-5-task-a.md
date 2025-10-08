@@ -73,4 +73,4 @@ sncast invoke \
 
 
 
-Task A HackMd link: https://hackmd.io/@Folex404/B1-UwDnhex 
+Task A HackMd link: https://hackmd.io/@Folex404/B1-UwDnhex

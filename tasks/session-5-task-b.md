@@ -10,3 +10,4 @@ Deploy or use the given Counter contract, then use sncast to:
 - Invoke `decrement` once.
 - Call `get_count` again to verify it decreased.
 
+Task B HackMd link: https://hackmd.io/@Folex404/B1szM0QTle
