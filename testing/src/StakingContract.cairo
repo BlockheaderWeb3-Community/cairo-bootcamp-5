@@ -126,6 +126,9 @@ mod Staking {
             let current_balance = self.balances.read(caller);
             self.balances.write(caller, current_balance + amount);
 
+            let current_total = self.total_supply.read();
+            self.total_supply.write(current_total + amount);
+
             let stake_details = StakeDetails { id, owner: caller, duration, amount, valid: true };
 
             self.stakes.write(id, stake_details);
