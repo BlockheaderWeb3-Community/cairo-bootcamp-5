@@ -1,9 +1,17 @@
-#[Starknet::contract]
-pub mod Counter {
-    // use Starknet::ContractAddress;
-    // use Starknet::get_caller_address;
-    use Starknet_contracts::interfaces::ICounter::ICounter;
-    use Starknet::storage::{StoragePointerReadAccess, StoragePointerWriteAccess};
+
+use starknet::storage::{StoragePointerReadAccess, StoragePointerWriteAccess};
+
+#[starknet::interface]
+trait ICounter<TContractState> {
+    fn get_count(self: @TContractState) -> u32;
+    fn increment(ref self: TContractState);
+    fn decrement(ref self: TContractState);
+}
+
+#[starknet::contract]
+mod Counter {
+    use super::ICounter;
+    use starknet::storage::{StoragePointerReadAccess, StoragePointerWriteAccess};
 
     #[storage]
     struct Storage {
@@ -11,12 +19,12 @@ pub mod Counter {
     }
 
     #[event]
-    #[derive(Drop, Starknet::Event)]
-    pub enum Event {
-        CountUpdated : CountUpdated,
+    #[derive(Drop, starknet::Event)]
+    enum Event {
+        CountUpdated: CountUpdated,
     }
 
-    #[derive(Drop, Starknet::Event)]
+    #[derive(Drop, starknet::Event)]
     struct CountUpdated {
         old_value: u32,
         new_value: u32,
